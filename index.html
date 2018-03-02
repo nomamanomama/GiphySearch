@@ -19,21 +19,20 @@
         <h1>Giphy Search</h1>
     </div>
     <div class="container">
-        <section class="col-12 buttonSection"><h3>Buttons</h3>
-            <div id="buttons"></div>
+        <section class="col-12 buttonSection"><h3>Flowers</h3>
+            <div id="gifbuttons"></div>
         </section>
         <div class="row">
             <section class="col-8 results "><h3> Gifs</h3> 
                 <div class="row flex-wrap" id="gifCards"></div>
             </section>
-            <aside class = "col-4 newSearch"><h3>Search</h3>
-                <div id="userSearch">
-                    <div class="input-group mb-3">
-                        <div class="input-group-prepend">
-                            <button class="btn btn-outline-secondary" type="button">Search</button>
-                        </div>
-                        <input id="newGiphy" type="text" class="form-control" placeholder="new flower search" aria-label="" aria-describedby="basic-addon1">
+            <aside class = "col-4">
+                <div id="userAdd">
+                    <div class="form-group">
+                        <label for="addFlower">Add a flower</label>
+                        <input type="text" class="form-control" id="addFlower" placeholder="Flower">
                     </div>
+                    <button type="button" class="btn btn-secondary" id="addFlowerButton">Submit</button>
                 </div>
             </aside>
         </div>
