@@ -1,15 +1,69 @@
+body {
+    background-image: url("../../assets/images/bg2.jpg");
+    background-repeat: no-repeat;
+    background-size: 100%;
+}
+
+.jumbotron {
+    background-color: #ffffff3a;
+    padding: 1rem;
+}
+
 .card-body {
     padding: 0;
 }
 
 .card {
     margin: .5rem;
-    max-width: 300px;
+    width: 200px;
 }
+
+.giphyImage {
+    width: 100%;
+}
+
+.newtopic {
+    margin: 7px 0px;
+    padding: 3px;
+    align-items: right;
+    float: right;
+}
+
 .topic {
     width: 100px;
     margin: 7px;
     padding: 3px;
+    background-color: rgb(253, 253, 148);
+    color: gray;
+    border-color: white;
+}
+
+h3 {
+    font-size: 1.25rem;
+}
+
+h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+    text-shadow: wheat;
+}
+
+.gifTitle {
+    font-size: .9rem;
+    font-weight: 600;
+}
+
+p {
+    font-size: .75rem;
+    font-style: italic;
+}
+
+#addLabel {
+    background-color: #ffffff91;
+    width: 100%;
+    margin-bottom: 0;
+    padding: 10px;
 }
 
 @media screen and (max-width: 768px) {
@@ -19,6 +73,4 @@
     }
 }
 
-@media screen and (max-width: 562px) {
-
-}
+@media screen and (max-width: 562px) {}

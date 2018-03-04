@@ -8,6 +8,10 @@
     <!-- Bootstrap CDN -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
         crossorigin="anonymous">
+    
+    <!-- link font awesome -->
+    <link href="https://use.fontawesome.com/releases/v5.0.8/css/all.css" rel="stylesheet">
+
     <!-- link our stylesheet -->
     <link rel="stylesheet" href="./assets/css/style.css">
 
@@ -19,22 +23,26 @@
         <h1>Giphy Search</h1>
     </div>
     <div class="container">
-        <section class="col-12 buttonSection"><h3>Flowers</h3>
-            <div id="gifbuttons"></div>
-        </section>
+        <h3 id="gifTopic">Flowers</h3>
         <div class="row">
-            <section class="col-8 results "><h3> Gifs</h3> 
-                <div class="row flex-wrap" id="gifCards"></div>
-            </section>
-            <aside class = "col-4">
-                <div id="userAdd">
-                    <div class="form-group">
-                        <label for="addFlower">Add a flower</label>
-                        <input type="text" class="form-control" id="addFlower" placeholder="Flower">
+            <div class="col-8" id="gifbuttons"></div>
+            <div class="col-4">
+                <form  class="justify-content-end" id="userAdd">
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <div class="input-group-text"><i class="fas fa-plus-circle"></i></div>
+                        </div>
+                        <input type="text" class="form-control" id="addTopic" placeholder="New Topic">
                     </div>
-                    <button type="button" class="btn btn-secondary" id="addFlowerButton">Submit</button>
-                </div>
-            </aside>
+                    <button type="submit" class="btn btn-secondary newtopic" id="addTopicButton">Submit</button>
+                </form>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12 gifSection"><h3> Gifs</h3> 
+                <div class="row flex-wrap" id="gifCards"></div>
+            </div>
+            
         </div>
     </div>
     <!-- Javascript goes below here -->

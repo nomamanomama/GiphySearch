@@ -1,3 +1,4 @@
+var topicName = "Flower";
 var topics = ["rose", "orchid", "petunia", "lilly", "daisy", "geranium", "tulip", "bluebonnet", "lilac", "violet"];
 var buttonName;
 var queryURLpre = "https://api.giphy.com/v1/gifs/search?api_key=pzWkzRyZiQFVEaxvVwyOIxLpA3h7ip8w&q=";
@@ -5,14 +6,12 @@ var queryURLpost = "&limit=10&offset=0&rating=G&lang=en";
 
 $(document).ready( function() { 
 
+$("gifTopic").text(topicName);
 
-function createButtons (clear) {
+function createButtons () {
+    $("#gifbuttons").empty();
     for (var i = 0; i<topics.length; i++){
         var newButton = $("<button>").text(topics[i]).addClass("btn btn-primary topic").attr("data-search", topics[i]);
-        if(clear) {
-            $("#gifbuttons").empty();
-            clear = false;
-        }
         $("#gifbuttons").append(newButton);
 
     }
@@ -23,8 +22,17 @@ function createCards(giphyList) {
     for (var i = 0; i<giphyList.data.length; i++){
         var giphyItem = giphyList.data[i];
         var gifCard = $("<div>").addClass("card gifCard");
-        var gifImage = $("<img>").addClass("card-img-top giphyImage").attr({ "data-gifurl": giphyItem.images.fixed_height_small.url, "data-gifstill": giphyItem.images.fixed_height_small_still.url, "src": giphyItem.images.fixed_height_small_still.url, "alt":"Card image top"});
-        var gifBody = $("<div>").addClass("card-body").text("Rating: " + giphyItem.rating.toUpperCase()).attr("height", "50px");
+        var gifImage = $("<img>").addClass("card-img-top giphyImage").attr({
+             "data-gifurl": giphyItem.images.fixed_height_small.url, 
+             "data-gifstill": giphyItem.images.fixed_height_small_still.url, 
+             "src": giphyItem.images.fixed_height_small_still.url, 
+             "alt":"Card image top"
+        });
+        var gifBody = $("<div>").addClass("card-body");
+        var rating = $("<p>").text("Rating: " + giphyItem.rating.toUpperCase());
+        var trendingDate = $("<p>").text("Trending: " + Date(giphyItem.trending));
+        var name= $("<p>").text(giphyItem.title).addClass("gifTitle");
+        gifBody.append(rating, name, trendingDate);
         $("#gifCards").append(gifCard.append(gifImage, gifBody));
     }
 }
@@ -34,7 +42,7 @@ function createCards(giphyList) {
     createButtons ();
 
     $(document).on("click",".topic", function () {
-        buttonName="flower+" + $(this).data("search");
+        buttonName= topicName + "+" + $(this).data("search");
         console.log(buttonName);
         $.ajax({
             url: queryURLpre + buttonName + queryURLpost,
@@ -58,11 +66,13 @@ function createCards(giphyList) {
         $(this).attr("src",source);
     });
 
-    $("#addFlowerButton").on("click", function (e) {
-        //e.preventDefault();
-        buttonName=$("#addFlower").val();
-        topics.push(buttonName);
-        createButtons(true);
+    $("#addTopicButton").on("click", function (e) {
+        e.preventDefault();
+        var userInput = $("#addTopic").val().trim();
+        if((topics.indexOf(userInput) === -1) && (userInput.length > 0)){
+            topics.push(userInput);
+            createButtons();
+        }
         
     });
 
