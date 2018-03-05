@@ -22,6 +22,11 @@ var categoryAnimals = {
     topics:["cat", "dog", "goat", "sheep", "horse", "mouse", "rabbit", "hamster", "chicken", "pig"]
 };
 
+var categoryFavorites = {
+    name: "Favorites",
+    topics:[]
+}
+
 var categories = [categoryFlowers, categoryCars, categoryAnimals];
 var activeCategory = categories[0];
 var favorites = {data:[]};
@@ -44,7 +49,7 @@ function createCategoryTabs(currentIndex) {
         "data-name": "showFavs"
     });
     //add + special character
-    favButton.html('<i class="far fa-star"></i> Favorites');
+    favButton.html('<i class="fas fa-star"></i> Favorites');
     var favItem = $("<li>").addClass("nav-item").append(favButton);
     $("#categories").append(favItem);
 
@@ -98,7 +103,10 @@ function createCards(giphyList) {
             "alt": "Card image top"
             });
         var gifBody = $("<div>").addClass("card-body");
-        var favorite = $("<button>").addClass("makeFav").html('<i class="far fa-star"></i>').data("giphy",giphyItem);
+        var favHTML = '<i class="far fa-star"></i>';
+        if (isFavorite(giphyItem))
+            favHTML = '<i class="fas fa-star"></i>';
+        var favorite = $("<button>").addClass("makeFav").html(favHTML).data("giphy",giphyItem);
         var rating = $("<p>").text("Rating: " + giphyItem.rating.toUpperCase());
         var trendingDate = $("<p>").text("Slug: " + giphyItem.slug);
         var name = $("<p>").html(giphyItem.title).addClass("gifTitle");
@@ -122,6 +130,16 @@ function displayFavorites() {
     $("body").css("background-image",'url("./assets/images/bg.jpg")');
 }
 
+function isFavorite (giphy) {
+    var found = false;
+    for (var i = 0; i < favorites.data.length; i++){
+        if(giphy.id === favorites.data[i].id) {
+            found = true;
+            break;
+        }
+    }
+    return found;
+}
 //////////////////////////////////////////////////////
 //
 //      AFTER DOC LOADS 
@@ -240,13 +258,23 @@ $(document).ready( function() {
         //save card to favorites array
         console.log(this);
         var giphy = $(this).data("giphy");
-        favorites.data.push(giphy);
-        $(this).html('<i class="fas fa-star"></i>');
+        //if it's already a favorite, remove from favs list and change star to outline
+        if (isFavorite(giphy))
+        {
+            var index = favorites.data.indexOf(giphy);
+            $(this).html('<i class="far fa-star"></i>');
+            //remove item from favorites array
+            favorites.data.splice(index,1);
+        } else {
+            favorites.data.push(giphy);
+            $(this).html('<i class="fas fa-star"></i>');
+        }
     });   
     
     //handle favorite tab clicked
     $(document).on("click", ".favorites", function (e) {
         displayFavorites();
+        activeCategory = categoryFavorites;
     });
 
 /////////////////////////////////////////////////////////////
