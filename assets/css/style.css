@@ -1,5 +1,5 @@
 body {
-    background-image: url("../../assets/images/bg3.jpg");
+    background-image: url("../../assets/images/bg0.jpg");
     background-repeat: no-repeat;
     background-size: 130%;
     font-size: 14px;
@@ -50,6 +50,7 @@ body {
     white-space: normal;
 }
 
+.favorites,
 .category {
     margin: 1px;
     border-color: #2e2c2c solid 3px;

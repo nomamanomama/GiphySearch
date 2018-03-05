@@ -24,6 +24,7 @@ var categoryAnimals = {
 
 var categories = [categoryFlowers, categoryCars, categoryAnimals];
 var activeCategory = categories[0];
+var favorites = {data:[]};
 
 
 var queryURLpre = "https://api.giphy.com/v1/gifs/search?api_key=pzWkzRyZiQFVEaxvVwyOIxLpA3h7ip8w&q=";
@@ -36,7 +37,31 @@ var queryURLpost = "&limit=10&offset=0&rating=G&lang=en";
 
 function createCategoryTabs(currentIndex) {
     $("#categories").empty();
-    for (var i = 0; i < categories.length; i++) {
+    
+    //add favorites button
+    var favButton = $("<button>").addClass("nav-link favorites").attr({
+        "id": "favTab",
+        "data-name": "showFavs"
+    });
+    //add + special character
+    favButton.html('<i class="far fa-star"></i> Favorites');
+    var favItem = $("<li>").addClass("nav-item").append(favButton);
+    $("#categories").append(favItem);
+
+    //prepend add new category tab
+    var button = $("<button>").addClass("nav-link category").attr({
+        "id": "cat+",
+        "data-name": "add",
+        "data-toggle": "modal",
+        "data-target": "#myCategory"
+    });
+    //add + special character
+    button.html('<i class="fas fa-plus-circle"></i>');
+    var item = $("<li>").addClass("nav-item").append(button);
+    $("#categories").prepend(item);
+    
+    //iterate in reverse order and prepend
+    for (var i = categories.length-1; i >=0 ; i--) {
         var button = $("<button>").addClass("nav-link category").text(categories[i].name).attr({
             "id": "cat" + i,
             "data-name": categories[i].name,
@@ -48,21 +73,8 @@ function createCategoryTabs(currentIndex) {
         var item = $("<li>").addClass("nav-item").append(button);
         //append to the html container
         console.log("appending " + categories[i].name);
-        $("#categories").append(item);
-    }
-
-    //last append add new category tab
-    var button = $("<button>").addClass("nav-link category").attr({
-        "id": "cat+",
-        "data-name": "add",
-        "data-toggle": "modal",
-        "data-target": "#myCategory"
-    });
-    //add + special character
-    button.html('<i class="fas fa-plus-circle"></i>');
-    var item = $("<li>").addClass("nav-item").append(button);
-    $("#categories").append(item);
-    console.log("appending add category");
+        $("#categories").prepend(item);
+    }  
 
 }
 
@@ -76,7 +88,6 @@ function createButtons() {
 }
 
 function createCards(giphyList) {
-    console.log(giphyList);
     for (var i = 0; i < giphyList.data.length; i++) {
         var giphyItem = giphyList.data[i];
         var gifCard = $("<div>").addClass("card gifCard");
@@ -87,6 +98,7 @@ function createCards(giphyList) {
             "alt": "Card image top"
             });
         var gifBody = $("<div>").addClass("card-body");
+        var favorite = $("<button>").addClass("makeFav").html('<i class="far fa-star"></i>').data("giphy",giphyItem);
         var rating = $("<p>").text("Rating: " + giphyItem.rating.toUpperCase());
         var trendingDate = $("<p>").text("Slug: " + giphyItem.slug);
         var name = $("<p>").html(giphyItem.title).addClass("gifTitle");
@@ -94,10 +106,20 @@ function createCards(giphyList) {
             "href": giphyItem.images.fixed_height_small.url,
             "download": ""
             }).html('&nbsp <i class="fas fa-cloud-download-alt"></i>').css("color","#cccccc");
-            name.append(download);
-        gifBody.append(rating, name, trendingDate);
+        name.append(download);
+        gifBody.append(favorite, rating, name, trendingDate);
         $("#gifCards").append(gifCard.append(gifImage, gifBody));
     }
+}
+
+function displayFavorites() {
+    $("#gifbuttons").empty();
+    $("#gifCards").empty();
+    console.log(favorites);
+    createCards(favorites);
+    $("#cat" + categories.indexOf(activeCategory)).removeClass("active");
+    $("#favTab").addClass("active");
+    $("body").css("background-image",'url("./assets/images/bg.jpg")');
 }
 
 //////////////////////////////////////////////////////
@@ -168,18 +190,20 @@ $(document).ready( function() {
         else if(tabName === "add"){
             //prompt user for a new category name
             var result = prompt("Enter new category name");
-            //create a new category object with the entered name and no topics
-            var newCategory = {
-                name: result,
-                topics:[]
-            };
-            //add the new category object to the array of categories
-            categories.push(newCategory);
-            //create the tabs and make the newly added tab "active"
-            createCategoryTabs(categories.length - 1);
-            //set the global variable to the new category object
-            activeCategory = categories[categories.length - 1];
-            
+            //if the user typed something
+            if (result != ""){
+                //create a new category object with the entered name and no topics
+                var newCategory = {
+                    name: result,
+                    topics:[]
+                };
+                //add the new category object to the array of categories
+                categories.push(newCategory);
+                //create the tabs and make the newly added tab "active"
+                createCategoryTabs(categories.length - 1);
+                //set the global variable to the new category object
+                activeCategory = categories[categories.length - 1];
+            }
         }
         else{   
             //remove the "active" class from the current category tab
@@ -188,13 +212,82 @@ $(document).ready( function() {
             activeCategory = categories[$(this).attr("data-index")];
             //add the active class to the current category
             $("#cat" + categoryIndex).addClass("active");
-        }  
+            //adjust the background
+            var bgImage = 'url("./assets/images/bg';
+            switch(categories.indexOf(activeCategory)){
+                case 0:
+                case 1:
+                case 2:
+                    bgImage += categories.indexOf(activeCategory);
+                    break;
+                default:
+                    break;    
+            }
+            bgImage += '.jpg")';
+            console.log(bgImage);
+            $("body").css("background-image",bgImage);
+        }
+        //favorite tab inactive
+        $("#favTab").removeClass("active");
         //topic changed - create topic buttons for current category
         createButtons();
         //empty the gifs from the previous tab
         $("#gifCards").empty();
     });
 
+    //handle make favorite icon clicked
+    $(document).on("click", ".makeFav", function (e) {
+        //save card to favorites array
+        console.log(this);
+        var giphy = $(this).data("giphy");
+        favorites.data.push(giphy);
+        $(this).html('<i class="fas fa-star"></i>');
+    });   
+    
+    //handle favorite tab clicked
+    $(document).on("click", ".favorites", function (e) {
+        displayFavorites();
+    });
 
+/////////////////////////////////////////////////////////////
+//
+//  WEB STORAGE
+//
+
+//create variables for storage keys
+// store array of category objects
+// store array of favorites
+
+    // if (!localStorage.getItem('bgcolor')) {
+    //     populateStorage();
+    // } else {
+    //     setStyles();
+    // }
+
+    // function populateStorage() {
+    //     localStorage.setItem('bgcolor', document.getElementById('bgcolor').value);
+    //     localStorage.setItem('font', document.getElementById('font').value);
+    //     localStorage.setItem('image', document.getElementById('image').value);
+
+    //     setStyles();
+    // }
+
+    // function setStyles() {
+    //     var currentColor = localStorage.getItem('bgcolor');
+    //     var currentFont = localStorage.getItem('font');
+    //     var currentImage = localStorage.getItem('image');
+
+    //     document.getElementById('bgcolor').value = currentColor;
+    //     document.getElementById('font').value = currentFont;
+    //     document.getElementById('image').value = currentImage;
+
+    //     htmlElem.style.backgroundColor = '#' + currentColor;
+    //     pElem.style.fontFamily = currentFont;
+    //     imgElem.setAttribute('src', currentImage);
+    // }
+
+    // bgcolorForm.onchange = populateStorage;
+    // fontForm.onchange = populateStorage;
+    // imageForm.onchange = populateStorage;
 
 });
