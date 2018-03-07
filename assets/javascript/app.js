@@ -28,7 +28,8 @@ var categoryFavorites = {
 }
 
 var categories = [categoryFlowers, categoryCars, categoryAnimals];
-var activeCategory = categories[0];
+var activeIndex = 0;
+var activeCategory = categories[activeIndex];
 var favorites = {data:[]};
 
 
@@ -72,12 +73,10 @@ function createCategoryTabs(currentIndex) {
             "data-name": categories[i].name,
             "data-index": i
         });
-        //add the active class only if the current category is the button we are making
-        if (currentIndex === i) button.addClass("active");
+        
         //append to the list item
         var item = $("<li>").addClass("nav-item").append(button);
         //append to the html container
-        console.log("appending " + categories[i].name);
         $("#categories").prepend(item);
     }  
 
@@ -140,22 +139,48 @@ function isFavorite (giphy) {
     }
     return found;
 }
+
+function setActiveTab(categoryIndex){
+    
+    activeIndex = categoryIndex;
+    //remove the "active" class from the current category tab
+    $("#cat" + categories.indexOf(activeCategory)).removeClass("active");
+    
+    //set the newly clicked tab to the current category
+    activeCategory = categories[categoryIndex];
+    
+    //add the active class to the current category
+    var name = "#cat" + categoryIndex.toString();
+    $(name).addClass("active");
+    
+    //adjust the background for selected category tab
+    var bgImage = 'url("./assets/images/bg';
+    switch (categories.indexOf(activeCategory)) {
+        case 0:
+        case 1:
+        case 2:
+            bgImage += categories.indexOf(activeCategory);
+            break;
+        default:
+            break;
+    }
+    bgImage += '.jpg")';
+    
+    //update the background image
+    $("body").css("background-image", bgImage);
+}
 //////////////////////////////////////////////////////
 //
-//      AFTER DOC LOADS 
+//      HANDLERS 
 //
 $(document).ready( function() { 
 
-    //create category tabs - initial current category is index 0
-    createCategoryTabs (0);
-    //create topic buttons for current category
-    createButtons ();
-
+ 
     //handle event if a topic is clicked
     $(document).on("click",".topic", function () {
         //get the button name from the clicked button
         var buttonName= activeCategory.name + "+" + $(this).data("search");
-        //console.log(buttonName);
+       
         //ajax call with queryURL and buttonName using get method
         $.ajax({
             url: queryURLpre + buttonName + queryURLpost,
@@ -193,9 +218,52 @@ $(document).ready( function() {
             activeCategory.topics.push(userInput);
             //create new buttons
             createButtons();
+            //data changed so update storage
+            populateStorage();
         }
         $("#addTopic").val('');
         
+    });
+
+    //handle event if topic button add topic button is clicked
+    $("#newCategory").on("click", function (e) {
+        //stop page refresh
+        e.preventDefault();
+
+        //get user input string
+        var result = $("#userCategoryText").val().trim();
+
+        //if the user typed something
+        if (result != "") {
+            //create a new category object with the entered name and no topics
+            var newCategory = {
+                name: result,
+                topics: []
+            };
+            //add the new category object to the array of categories
+            categories.push(newCategory);
+            //create the tabs and make the newly added tab "active"
+            createCategoryTabs(categories.length - 1);
+            //set the global variable to the new category object
+            activeCategory = categories[categories.length - 1];
+            //data changed so update storage
+            populateStorage();
+        }
+        $("#userCategoryText").val('');
+        $("#myCategory").modal('hide');
+        //favorite doesn't have selector format tab and would be handled here
+        //set it to inactive state
+        $("#favTab").removeClass("active");
+        //topic changed - create topic buttons for current category
+        createButtons();
+        //empty the gifs from the previous tab
+        $("#gifCards").empty();
+    });
+
+    //handle event if topic button add topic button is clicked
+    $("#cancelCategory").on("click", function (e) {
+            //stop page refresh
+            e.preventDefault();
     });
 
     //event handler for category tabs
@@ -206,46 +274,14 @@ $(document).ready( function() {
         if (tabName === activeCategory.name)
             return;
         else if(tabName === "add"){
-            //prompt user for a new category name
-            var result = prompt("Enter new category name");
-            //if the user typed something
-            if (result != ""){
-                //create a new category object with the entered name and no topics
-                var newCategory = {
-                    name: result,
-                    topics:[]
-                };
-                //add the new category object to the array of categories
-                categories.push(newCategory);
-                //create the tabs and make the newly added tab "active"
-                createCategoryTabs(categories.length - 1);
-                //set the global variable to the new category object
-                activeCategory = categories[categories.length - 1];
-            }
+            //open the modal so user can enter a new category name
+            $("#myCategory").modal("show");
         }
         else{   
-            //remove the "active" class from the current category tab
-            $("#cat" + categories.indexOf(activeCategory)).removeClass("active");
-            //set the newly clicked tab to the current category
-            activeCategory = categories[$(this).attr("data-index")];
-            //add the active class to the current category
-            $("#cat" + categoryIndex).addClass("active");
-            //adjust the background
-            var bgImage = 'url("./assets/images/bg';
-            switch(categories.indexOf(activeCategory)){
-                case 0:
-                case 1:
-                case 2:
-                    bgImage += categories.indexOf(activeCategory);
-                    break;
-                default:
-                    break;    
-            }
-            bgImage += '.jpg")';
-            console.log(bgImage);
-            $("body").css("background-image",bgImage);
+            setActiveTab(categoryIndex);
         }
-        //favorite tab inactive
+        //favorite doesn't have selector format tab and would be handled here
+        //set it to inactive state
         $("#favTab").removeClass("active");
         //topic changed - create topic buttons for current category
         createButtons();
@@ -256,7 +292,7 @@ $(document).ready( function() {
     //handle make favorite icon clicked
     $(document).on("click", ".makeFav", function (e) {
         //save card to favorites array
-        console.log(this);
+        
         var giphy = $(this).data("giphy");
         //if it's already a favorite, remove from favs list and change star to outline
         if (isFavorite(giphy))
@@ -269,6 +305,8 @@ $(document).ready( function() {
             favorites.data.push(giphy);
             $(this).html('<i class="fas fa-star"></i>');
         }
+        //data changed so update storage
+        populateStorage();
     });   
     
     //handle favorite tab clicked
@@ -281,41 +319,44 @@ $(document).ready( function() {
 //
 //  WEB STORAGE
 //
+    //check to see if local storage keys exist and populate them if they don't
+    if (!localStorage.getItem('categories')) {
+        populateStorage();
+    } else {
+        setData();
+    }
 
-//create variables for storage keys
-// store array of category objects
-// store array of favorites
+    function populateStorage() {
+        // store array of category objects
+        localStorage.setItem("categories", JSON.stringify(categories));
+        // store array of favorites
+        localStorage.setItem("favorites", JSON.stringify(favorites));
+        //store which category tab was active
+        localStorage.setItem("activeIndex", JSON.stringify(activeIndex));
+        //populate the data to display on our page
+        setData();
+    }
 
-    // if (!localStorage.getItem('bgcolor')) {
-    //     populateStorage();
-    // } else {
-    //     setStyles();
-    // }
+    //set our variables to display the retrieved data
+    function setData() {
+        categories = JSON.parse(localStorage.getItem("categories"));
+        favorites = JSON.parse(localStorage.getItem("favorites"));
+        activeIndex = JSON.parse(localStorage.getItem("activeIndex"));
+    }
 
-    // function populateStorage() {
-    //     localStorage.setItem('bgcolor', document.getElementById('bgcolor').value);
-    //     localStorage.setItem('font', document.getElementById('font').value);
-    //     localStorage.setItem('image', document.getElementById('image').value);
-
-    //     setStyles();
-    // }
-
-    // function setStyles() {
-    //     var currentColor = localStorage.getItem('bgcolor');
-    //     var currentFont = localStorage.getItem('font');
-    //     var currentImage = localStorage.getItem('image');
-
-    //     document.getElementById('bgcolor').value = currentColor;
-    //     document.getElementById('font').value = currentFont;
-    //     document.getElementById('image').value = currentImage;
-
-    //     htmlElem.style.backgroundColor = '#' + currentColor;
-    //     pElem.style.fontFamily = currentFont;
-    //     imgElem.setAttribute('src', currentImage);
-    // }
-
-    // bgcolorForm.onchange = populateStorage;
-    // fontForm.onchange = populateStorage;
-    // imageForm.onchange = populateStorage;
+/////////////////////////////////////////////////////////////
+//
+//  DISPLAY TABS and CATEGORIES
+//
+    //create category tabs - initial current category is index 0
+    createCategoryTabs(0);
+    
+    //select the active tab from the last session
+    activeCategory = categories[activeIndex];
+    setActiveTab(activeIndex);
+   
+    //create topic buttons for current category
+    createButtons();
+    
 
 });
